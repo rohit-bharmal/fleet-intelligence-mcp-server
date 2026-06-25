@@ -1,10 +1,22 @@
 # Copy to config.yaml and edit
 
-# Data source: kubernetes (ACM hub) or globalhub (Postgres)
 source: kubernetes
 url: ~/.kube/config
 
-# MCP HTTP server
 host: 127.0.0.1
 port: 3000
 name: fleet-intelligence-mcp-server
+
+# OpenShift monitoring speaks HTTPS and requires a Bearer token (from kubeconfig).
+observability:
+  prometheusUrl: https://127.0.0.1:9091
+  alertmanagerUrl: https://127.0.0.1:9094
+  tlsInsecure: true
+
+# Port-forward commands (run in separate terminals):
+# kubectl port-forward -n openshift-monitoring svc/thanos-querier 9091:9091
+# kubectl port-forward -n openshift-monitoring svc/alertmanager-main 9094:9094
+
+# When ACM multicluster observability is enabled, use instead:
+# prometheusUrl: https://127.0.0.1:9090
+# alertmanagerUrl: https://127.0.0.1:9093

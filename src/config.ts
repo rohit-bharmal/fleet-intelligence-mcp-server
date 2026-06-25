@@ -4,10 +4,18 @@ import { resolve } from "node:path";
 import { parse } from "yaml";
 import type { FleetConfig } from "./clients/kubernetes.js";
 
+export interface ObservabilityConfig {
+  prometheusUrl?: string;
+  alertmanagerUrl?: string;
+  /** Skip TLS verification for local port-forwards (OpenShift uses HTTPS + self-signed certs). */
+  tlsInsecure?: boolean;
+}
+
 export interface AppConfig extends FleetConfig {
   host: string;
   port: number;
   name: string;
+  observability?: ObservabilityConfig;
 }
 
 const defaults: AppConfig = {
@@ -16,6 +24,11 @@ const defaults: AppConfig = {
   host: "127.0.0.1",
   port: 3000,
   name: "fleet-intelligence-mcp-server",
+  observability: {
+    prometheusUrl: "https://127.0.0.1:9091",
+    alertmanagerUrl: "https://127.0.0.1:9094",
+    tlsInsecure: true,
+  },
 };
 
 export function resolveConfigUrl(
@@ -56,5 +69,11 @@ export function loadConfig(): AppConfig {
     host: raw.host ?? defaults.host,
     port: raw.port ?? defaults.port,
     name: raw.name ?? defaults.name,
+    observability: {
+      prometheusUrl: raw.observability?.prometheusUrl ?? defaults.observability?.prometheusUrl,
+      alertmanagerUrl:
+        raw.observability?.alertmanagerUrl ?? defaults.observability?.alertmanagerUrl,
+      tlsInsecure: raw.observability?.tlsInsecure ?? defaults.observability?.tlsInsecure,
+    },
   };
 }
