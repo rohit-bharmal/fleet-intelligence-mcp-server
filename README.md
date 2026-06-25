@@ -95,7 +95,7 @@ kubectl port-forward -n openshift-monitoring svc/alertmanager-main 9094:9094
 
 Then set `observability.prometheusUrl` and `alertmanagerUrl` in `config.yaml`.
 
-Sample outputs: [`examples/example-responses.json`](examples/example-responses.json)
+Example prompts: [`example_prompts.md`](example_prompts.md)
 
 ## License
 
