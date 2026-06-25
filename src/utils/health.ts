@@ -2,6 +2,7 @@ import type {
   ClusterCondition,
   ClusterHealthDetail,
   ClusterHealthExplanation,
+  ClusterSummary,
   HealthLevel,
   UnhealthyClusterSummary,
 } from "../types/health.js";
@@ -198,6 +199,13 @@ export function toUnhealthyClusterSummary(
     clusterName: cluster.metadata.name,
     health,
     reason: deriveHealthReason(cluster, health),
+  };
+}
+
+export function toClusterSummary(cluster: ManagedCluster): ClusterSummary {
+  return {
+    clusterName: cluster.metadata.name,
+    health: deriveHealthLevel(cluster),
   };
 }
 

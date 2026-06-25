@@ -2,6 +2,7 @@ import type { ClusterInventoryProvider } from "../types/clusterProvider.js";
 import type {
   ClusterHealthDetail,
   ClusterHealthExplanation,
+  ClusterSummary,
   FleetHealthSummary,
   UnhealthyClusterSummary,
 } from "../types/health.js";
@@ -11,6 +12,7 @@ import {
   isUnhealthyHealthLevel,
   toClusterHealthDetail,
   toClusterHealthExplanation,
+  toClusterSummary,
   toUnhealthyClusterSummary,
 } from "../utils/health.js";
 
@@ -23,6 +25,13 @@ export class ClusterNotFoundError extends Error {
 
 export class HealthService {
   constructor(private readonly clusterProvider: ClusterInventoryProvider) {}
+
+  async listClusters(): Promise<ClusterSummary[]> {
+    const clusters = await this.clusterProvider.listManagedClusters();
+    return clusters
+      .map(toClusterSummary)
+      .sort((a, b) => a.clusterName.localeCompare(b.clusterName));
+  }
 
   async getFleetHealth(): Promise<FleetHealthSummary> {
     const clusters = await this.clusterProvider.listManagedClusters();

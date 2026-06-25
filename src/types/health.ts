@@ -36,6 +36,12 @@ export type UnhealthyClusterSummary = z.infer<
   typeof UnhealthyClusterSummarySchema
 >;
 
+export const ClusterSummarySchema = z.object({
+  clusterName: z.string(),
+  health: HealthLevelSchema,
+});
+export type ClusterSummary = z.infer<typeof ClusterSummarySchema>;
+
 export const ClusterHealthDetailSchema = z.object({
   clusterName: z.string(),
   health: HealthLevelSchema,

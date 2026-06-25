@@ -5,6 +5,7 @@ import { HealthService } from "./services/healthService.js";
 import { registerClusterHealthTool } from "./tools/clusterHealth.js";
 import { registerExplainClusterHealthTool } from "./tools/explainClusterHealth.js";
 import { registerFleetHealthTool } from "./tools/fleetHealth.js";
+import { registerListClustersTool } from "./tools/listClusters.js";
 import { registerListUnhealthyClustersTool } from "./tools/listUnhealthyClusters.js";
 
 export interface AcmMcpServerOptions {
@@ -23,6 +24,7 @@ export function createAcmMcpServer(
 
   const healthService = new HealthService(createDataClient(config));
 
+  registerListClustersTool(server, healthService);
   registerFleetHealthTool(server, healthService);
   registerListUnhealthyClustersTool(server, healthService);
   registerClusterHealthTool(server, healthService);
