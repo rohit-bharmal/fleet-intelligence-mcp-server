@@ -1,0 +1,10 @@
+# Copy to config.yaml and edit
+
+# Data source: kubernetes (ACM hub) or globalhub (Postgres)
+source: kubernetes
+url: ~/.kube/config
+
+# MCP HTTP server
+host: 127.0.0.1
+port: 3000
+name: fleet-intelligence-mcp-server
