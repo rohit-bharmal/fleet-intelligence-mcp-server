@@ -1,6 +1,7 @@
 import * as k8s from "@kubernetes/client-node";
 import pg from "pg";
 import type { ClusterInventoryProvider } from "../types/clusterProvider.js";
+import { logInfo } from "../utils/logger.js";
 import {
   MANAGED_CLUSTER_API_GROUP,
   MANAGED_CLUSTER_API_VERSION,
@@ -37,6 +38,7 @@ export class KubernetesClient implements ClusterInventoryProvider {
   }
 
   async listManagedClusters(): Promise<ManagedCluster[]> {
+    logInfo("fetching managed clusters", { source: "kubernetes" });
     const response = await this.customObjectsApi.listClusterCustomObject({
       group: MANAGED_CLUSTER_API_GROUP,
       version: MANAGED_CLUSTER_API_VERSION,
@@ -44,10 +46,13 @@ export class KubernetesClient implements ClusterInventoryProvider {
     });
 
     const body = response as { items?: ManagedCluster[] };
-    return (body.items ?? []) as ManagedCluster[];
+    const clusters = (body.items ?? []) as ManagedCluster[];
+    logInfo("fetched managed clusters", { count: clusters.length });
+    return clusters;
   }
 
   async getManagedCluster(name: string): Promise<ManagedCluster | undefined> {
+    logInfo("fetching managed cluster", { source: "kubernetes", name });
     try {
       const response = await this.customObjectsApi.getClusterCustomObject({
         group: MANAGED_CLUSTER_API_GROUP,
@@ -100,13 +105,17 @@ class GlobalHubClient implements ClusterInventoryProvider {
   }
 
   async listManagedClusters(): Promise<ManagedCluster[]> {
+    logInfo("fetching managed clusters", { source: "globalhub" });
     const result = await this.pool.query<{ payload: ManagedCluster }>(
       "SELECT payload FROM status.managed_clusters",
     );
-    return result.rows.map((row) => row.payload);
+    const clusters = result.rows.map((row) => row.payload);
+    logInfo("fetched managed clusters", { count: clusters.length });
+    return clusters;
   }
 
   async getManagedCluster(name: string): Promise<ManagedCluster | undefined> {
+    logInfo("fetching managed cluster", { source: "globalhub", name });
     const result = await this.pool.query<{ payload: ManagedCluster }>(
       "SELECT payload FROM status.managed_clusters WHERE payload->'metadata'->>'name' = $1 LIMIT 1",
       [name],

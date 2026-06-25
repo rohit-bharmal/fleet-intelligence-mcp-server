@@ -2,6 +2,7 @@ import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { z } from "zod";
 import { ClusterNotFoundError, type HealthService } from "../services/healthService.js";
 import { ClusterHealthExplanationSchema } from "../types/health.js";
+import { withToolLog } from "../utils/logger.js";
 import { formatToolError, formatToolResult } from "../utils/mcp.js";
 
 const explainClusterHealthInputSchema = {
@@ -16,17 +17,18 @@ export function registerExplainClusterHealthTool(
     "explain_cluster_health",
     "Collects all available ManagedCluster conditions and metadata so an LLM can explain why a cluster is unhealthy.",
     explainClusterHealthInputSchema,
-    async ({ clusterName }) => {
-      try {
-        const explanation = await healthService.explainClusterHealth(clusterName);
-        const validated = ClusterHealthExplanationSchema.parse(explanation);
-        return formatToolResult(validated);
-      } catch (error) {
-        if (error instanceof ClusterNotFoundError) {
-          return formatToolError(error.message);
+    async ({ clusterName }) =>
+      withToolLog("explain_cluster_health", { clusterName }, async () => {
+        try {
+          const explanation = await healthService.explainClusterHealth(clusterName);
+          const validated = ClusterHealthExplanationSchema.parse(explanation);
+          return formatToolResult(validated);
+        } catch (error) {
+          if (error instanceof ClusterNotFoundError) {
+            return formatToolError(error.message);
+          }
+          throw error;
         }
-        throw error;
-      }
-    },
+      }),
   );
 }
