@@ -70,10 +70,14 @@ export function loadConfig(): AppConfig {
     port: raw.port ?? defaults.port,
     name: raw.name ?? defaults.name,
     observability: {
-      prometheusUrl: raw.observability?.prometheusUrl ?? defaults.observability?.prometheusUrl,
+      prometheusUrl:
+        raw.observability?.prometheusUrl ??
+        defaults.observability?.prometheusUrl,
       alertmanagerUrl:
-        raw.observability?.alertmanagerUrl ?? defaults.observability?.alertmanagerUrl,
-      tlsInsecure: raw.observability?.tlsInsecure ?? defaults.observability?.tlsInsecure,
+        raw.observability?.alertmanagerUrl ??
+        defaults.observability?.alertmanagerUrl,
+      tlsInsecure:
+        raw.observability?.tlsInsecure ?? defaults.observability?.tlsInsecure,
     },
   };
 }

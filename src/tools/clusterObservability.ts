@@ -20,11 +20,13 @@ export function registerClusterObservabilityTool(
     async ({ clusterName }) =>
       withToolLog("cluster_observability", { clusterName }, async () => {
         try {
-          const summary = await observabilityService.getClusterObservability(clusterName);
+          const summary =
+            await observabilityService.getClusterObservability(clusterName);
           const validated = ClusterObservabilitySchema.parse(summary);
           return formatToolResult(validated);
         } catch (error) {
-          const message = error instanceof Error ? error.message : String(error);
+          const message =
+            error instanceof Error ? error.message : String(error);
           return formatToolError(message);
         }
       }),

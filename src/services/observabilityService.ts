@@ -1,6 +1,9 @@
 import { AlertmanagerClient } from "../clients/alertmanager.js";
 import { ObservabilityHttp } from "../clients/observabilityHttp.js";
-import { PrometheusClient, type PrometheusQueryResult } from "../clients/prometheus.js";
+import {
+  PrometheusClient,
+  type PrometheusQueryResult,
+} from "../clients/prometheus.js";
 import type { ClusterInventoryProvider } from "../types/clusterProvider.js";
 import type { HealthLevel } from "../types/health.js";
 import type {
@@ -74,7 +77,9 @@ export class ObservabilityService {
     return nodes;
   }
 
-  async getClusterObservability(clusterName: string): Promise<ClusterObservability> {
+  async getClusterObservability(
+    clusterName: string,
+  ): Promise<ClusterObservability> {
     logInfo("building cluster observability", { clusterName });
     await this.requireCluster(clusterName);
 
@@ -114,9 +119,14 @@ export class ObservabilityService {
     return this.prometheus;
   }
 
-  private async queryForCluster(expr: string, clusterName: string): Promise<PrometheusQueryResult[]> {
+  private async queryForCluster(
+    expr: string,
+    clusterName: string,
+  ): Promise<PrometheusQueryResult[]> {
     const prometheus = this.requirePrometheus();
-    const scoped = expr.includes("{") ? clusterSelector(clusterName, expr) : `${expr}{cluster="${clusterName}"}`;
+    const scoped = expr.includes("{")
+      ? clusterSelector(clusterName, expr)
+      : `${expr}{cluster="${clusterName}"}`;
 
     try {
       const results = await prometheus.query(scoped);
@@ -131,22 +141,38 @@ export class ObservabilityService {
   }
 
   private async fetchNodes(clusterName: string): Promise<NodeHealthSummary[]> {
-    const [infoResults, readyResults, cpuResults, memResults] = await Promise.all([
-      this.queryForCluster("kube_node_info", clusterName),
-      this.queryForCluster('kube_node_status_condition{condition="Ready",status="true"}', clusterName),
-      this.queryForCluster(
-        `100 * (1 - avg by (node) (rate(node_cpu_seconds_total{mode="idle"}[5m])))`,
-        clusterName,
-      ),
-      this.queryForCluster(
-        `100 * (1 - (node_memory_MemAvailable_bytes / node_memory_MemTotal_bytes))`,
-        clusterName,
-      ),
-    ]);
+    const [infoResults, readyResults, cpuResults, memResults] =
+      await Promise.all([
+        this.queryForCluster("kube_node_info", clusterName),
+        this.queryForCluster(
+          'kube_node_status_condition{condition="Ready",status="true"}',
+          clusterName,
+        ),
+        this.queryForCluster(
+          `100 * (1 - avg by (node) (rate(node_cpu_seconds_total{mode="idle"}[5m])))`,
+          clusterName,
+        ),
+        this.queryForCluster(
+          `100 * (1 - (node_memory_MemAvailable_bytes / node_memory_MemTotal_bytes))`,
+          clusterName,
+        ),
+      ]);
 
-    const readyNodes = new Set(readyResults.map((r) => r.metric.node).filter(Boolean));
-    const cpuByNode = new Map(cpuResults.map((r) => [r.metric.node, Number.parseFloat(r.value?.[1] ?? "NaN")]));
-    const memByNode = new Map(memResults.map((r) => [r.metric.node, Number.parseFloat(r.value?.[1] ?? "NaN")]));
+    const readyNodes = new Set(
+      readyResults.map((r) => r.metric.node).filter(Boolean),
+    );
+    const cpuByNode = new Map(
+      cpuResults.map((r) => [
+        r.metric.node,
+        Number.parseFloat(r.value?.[1] ?? "NaN"),
+      ]),
+    );
+    const memByNode = new Map(
+      memResults.map((r) => [
+        r.metric.node,
+        Number.parseFloat(r.value?.[1] ?? "NaN"),
+      ]),
+    );
 
     const nodes = infoResults
       .map((r) => r.metric.node)
